@@ -22,6 +22,7 @@ public class FileReceiver {
 			try {
 				sock.receive(incomingPacket);
 				Package pak = new Package(incomingPacket);
+				System.out.println("Package erhalten");
 			}
 			catch (SocketTimeoutException s) {
 				//nochmal senden lassen
