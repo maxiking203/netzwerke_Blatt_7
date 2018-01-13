@@ -29,18 +29,22 @@ public class Package {
 			this.fin = fin;
 			this.content = content;
 			
-			genarteCheckSum();
+			generateCheckSum();
 		}
 		else {
 			System.out.println("Die Sequenznummer muss 0 oder 1 sein");
 		}
 	}
 	
+	public Package(DatagramPacket dpak) {
+		udpPackageToPackage(dpak);
+	}
+	
 	
 	
 	//Generiert eine cheksumme für ein Package, 
 	//die Checksum selber is dabei in dem betrachteten byte Array ausgeschlossen
-	private void genarteCheckSum() {
+	private void generateCheckSum() {
 		CRC32 checkSumObj = new CRC32();
 		byte[] packageAsArray = packageToByteArray();
 		checkSumObj.update(packageAsArray, 8, packageAsArray.length);
@@ -53,7 +57,7 @@ public class Package {
 	///////////////////////////////
 	
 	
-	//Methode um ein erhaltenes DatamgramPacket in zurück in unsere Pachageformat umzuwandeln
+	//Methode um ein erhaltenes DatagramPacket zurück in unser Packageformat umzuwandeln
 	public Package udpPackageToPackage(DatagramPacket inPackage) {
 		byte[] wholePackage = inPackage.getData();
 		
@@ -125,6 +129,11 @@ public class Package {
         return bytes;
 	}
 	
+	public DatagramPacket PackageToDatagramPacket() {
+		byte [] data = packageToByteArray();
+		return new DatagramPacket(data, data.length);
+	}
+	
 	
 	///////////////////////////////
 	//Getter und Setter für Objekt Variablen
@@ -141,7 +150,7 @@ public class Package {
 	
 	
 	public void setChecksum() {
-		genarteCheckSum();
+		generateCheckSum();
 	}
 	
 	
