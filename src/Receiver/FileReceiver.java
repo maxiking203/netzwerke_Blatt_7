@@ -12,10 +12,11 @@ public class FileReceiver {
 	
 	public static void main(String[] args) throws SocketException {
 		
+		while(true) {
 		DatagramSocket sock = new DatagramSocket(5000);
 		sock.setSoTimeout(5000);
 		
-		while(true) {
+		
 			byte[] buffer = new byte[1400];
 			DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
 			

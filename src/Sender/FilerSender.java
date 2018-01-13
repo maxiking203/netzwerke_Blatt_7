@@ -56,7 +56,7 @@ public class FilerSender {
 		backupPacket = dpak;
 	}
 	
-	private void waitForIncomingPacket() {
+	private void waitForIncomingPacket() throws IOException {
 		boolean gotpackage = false;
 		
 			
@@ -86,6 +86,8 @@ public class FilerSender {
 				}
 				catch (SocketTimeoutException s) {
 					System.out.println("Timeout");
+					sendPacket(backupPacket);
+					System.out.println("Resend backupPacket");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -128,6 +130,8 @@ public class FilerSender {
 			System.arraycopy(toSendFile, positionArray, splittedArray, positionArray, toSendFile.length - positionArray);
 			positionArray += toSendFile.length - positionArray;	
 		}
+		System.out.println(splittedArray[0]);
+		System.out.println(splittedArray.length);
 		return splittedArray;
 	}
 	

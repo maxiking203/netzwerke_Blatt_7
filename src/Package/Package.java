@@ -5,10 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.util.zip.CRC32;
 
-public class Package {
+public class Package implements Serializable {
 	
 	private long checkSum;
 	private String filename;
@@ -47,7 +48,7 @@ public class Package {
 	private void generateCheckSum() {
 		CRC32 checkSumObj = new CRC32();
 		byte[] packageAsArray = packageToByteArray();
-		checkSumObj.update(packageAsArray, 8, packageAsArray.length);
+		checkSumObj.update(packageAsArray, 8, packageAsArray.length -8);
 		this.checkSum = checkSumObj.getValue();
 	}
 	
@@ -130,7 +131,7 @@ public class Package {
 	}
 	
 	public DatagramPacket PackageToDatagramPacket() {
-		byte [] data = packageToByteArray();
+		byte [] data = this.packageToByteArray();
 		return new DatagramPacket(data, data.length);
 	}
 	
