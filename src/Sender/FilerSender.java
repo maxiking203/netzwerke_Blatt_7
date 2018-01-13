@@ -64,34 +64,43 @@ public class FilerSender {
 			DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
 			
 			while(!gotpackage) {
-				
 				try {
 					sock.receive(incomingPacket);
-					gotpackage = true;
 					Package pak = new Package(incomingPacket);
 					long check = pak.getCheckSum();
 					pak.setChecksum();
-	//				if (pak.getSeqNum() == seq) {
-	//					System.out.println("Seq in Ordnung");
-	//					seq = 1;
-	//				}
+					if (pak.getSeqNum() == seq) {
+						System.out.println("Seq in Ordnung");
+					}
 					if (check != pak.getCheckSum()) {
-						//resend backupPacket
 						System.out.println("Checksum falsch");
+						sendPacket(backupPacket);
 					}
 					else {
-						//proceed
+						gotpackage = true;
 						System.out.println("Checksum passt");
 					}
 				}
 				catch (SocketTimeoutException s) {
 					System.out.println("Timeout");
 					sendPacket(backupPacket);
-					System.out.println("Resend backupPacket");
+					System.out.println("Resend Backup-Packet");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
+	}
+	
+	private void update() throws IOException {
+		if (seq == 0) {
+			seq = 1;
+		}
+		else {
+			seq = 0;
+		}
+		
+		Package pack = setupPackage();
+		sendPacket(pack);
 	}
 	
 	private byte[] fileToByteArray() {
@@ -130,22 +139,19 @@ public class FilerSender {
 			System.arraycopy(toSendFile, positionArray, splittedArray, positionArray, toSendFile.length - positionArray);
 			positionArray += toSendFile.length - positionArray;	
 		}
-		System.out.println(splittedArray[0]);
-		System.out.println(splittedArray.length);
 		return splittedArray;
 	}
 	
-	private void setupPackage() throws IOException {
+	private Package setupPackage() throws IOException {
 		byte[] send = splitSendArray();
 		if (positionArray >= toSendFile.length) {
 			Package pack = new Package(file.getName(), seq, true, true, send);
-			sendPacket(pack);
+			return pack;
 		}
 		else {
 			Package pack = new Package(file.getName(), seq, true, false, send);
-			sendPacket(pack);
+			return pack;
 		}
-
 	}
 	
 	public static void main(String[] args) {
@@ -155,7 +161,7 @@ public class FilerSender {
 			try {
 				FilerSender fs = new FilerSender("default.txt", InetAddress.getByName("127.0.0.1"));
 				while(true) {
-					fs.setupPackage();
+					fs.update();
 					fs.waitForIncomingPacket();
 				}
 			} catch (UnknownHostException e1) {
