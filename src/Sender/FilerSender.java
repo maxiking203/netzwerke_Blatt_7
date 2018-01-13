@@ -50,9 +50,17 @@ public class FilerSender {
 		try {
 			sock.receive(incomingPacket);
 			Package pak = new Package(incomingPacket);
+			long check = pak.getCheckSum();
+			pak.setChecksum();
+			if (check != pak.getCheckSum()) {
+				//resend backupPacket
+			}
+			else {
+				//proceed
+			}
 		}
 		catch (SocketTimeoutException s) {
-			//nochmal senden lassen
+			//resend backupPacket
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
