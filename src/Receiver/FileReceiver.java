@@ -13,7 +13,7 @@ public class FileReceiver {
 	public static void main(String[] args) throws SocketException {
 		
 		DatagramSocket sock = new DatagramSocket(5000);
-		sock.setSoTimeout(500);
+		sock.setSoTimeout(5000);
 		
 		while(true) {
 			byte[] buffer = new byte[1400];
@@ -26,6 +26,7 @@ public class FileReceiver {
 			}
 			catch (SocketTimeoutException s) {
 				//nochmal senden lassen
+				System.out.println("Timeout");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

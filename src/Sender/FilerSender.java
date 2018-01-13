@@ -58,36 +58,38 @@ public class FilerSender {
 	
 	private void waitForIncomingPacket() {
 		boolean gotpackage = false;
-		while(!gotpackage) {
+		
 			
 			byte[] buffer = new byte[1400];
 			DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
 			
-			try {
-				sock.receive(incomingPacket);
-				gotpackage = true;
-				Package pak = new Package(incomingPacket);
-				long check = pak.getCheckSum();
-				pak.setChecksum();
-//				if (pak.getSeqNum() == seq) {
-//					System.out.println("Seq in Ordnung");
-//					seq = 1;
-//				}
-				if (check != pak.getCheckSum()) {
-					//resend backupPacket
-					System.out.println("Checksum falsch");
+			while(!gotpackage) {
+				
+				try {
+					sock.receive(incomingPacket);
+					gotpackage = true;
+					Package pak = new Package(incomingPacket);
+					long check = pak.getCheckSum();
+					pak.setChecksum();
+	//				if (pak.getSeqNum() == seq) {
+	//					System.out.println("Seq in Ordnung");
+	//					seq = 1;
+	//				}
+					if (check != pak.getCheckSum()) {
+						//resend backupPacket
+						System.out.println("Checksum falsch");
+					}
+					else {
+						//proceed
+						System.out.println("Checksum passt");
+					}
 				}
-				else {
-					//proceed
-					System.out.println("Checksum passt");
+				catch (SocketTimeoutException s) {
+					System.out.println("Timeout");
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
-			catch (SocketTimeoutException s) {
-				System.out.println("Timeout");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 	
 	private byte[] fileToByteArray() {
@@ -123,7 +125,7 @@ public class FilerSender {
 		}
 		else {
 			splittedArray = new byte[toSendFile.length - positionArray];
-			System.arraycopy(toSendFile, positionArray, splittedArray, positionArray, 1000);
+			System.arraycopy(toSendFile, positionArray, splittedArray, positionArray, toSendFile.length - positionArray);
 			positionArray += toSendFile.length - positionArray;	
 		}
 		return splittedArray;
@@ -132,11 +134,11 @@ public class FilerSender {
 	private void setupPackage() throws IOException {
 		byte[] send = splitSendArray();
 		if (positionArray >= toSendFile.length) {
-			Package pack = new Package(file.getName(), positionArray, true, true, send);
+			Package pack = new Package(file.getName(), seq, true, true, send);
 			sendPacket(pack);
 		}
 		else {
-			Package pack = new Package(file.getName(), positionArray, true, false, send);
+			Package pack = new Package(file.getName(), seq, true, false, send);
 			sendPacket(pack);
 		}
 
