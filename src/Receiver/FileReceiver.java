@@ -81,26 +81,32 @@ public class FileReceiver {
 				sock.setSoTimeout(1000);
 				ip = incomingPacket.getAddress();
 				Package pak = new Package(incomingPacket);
-				seq = pak.getSeqNum();
 				fin = pak.getFin();
 				long check = pak.getCheckSum();
 				pak.setChecksum();
 				if (pak.getSeqNum() == seq) {
 					System.out.println("Seq in Ordnung");
+					seq = pak.getSeqNum();
+					noPack = false;
+				}
+				else {
+					System.out.println("Seq falsch");
+					setupPackage(false);
 				}
 				if (check != pak.getCheckSum()) {
 					System.out.println("Checksum falsch");
-					sendAnswerPacket(backupDataPacket);
+					setupPackage(false);
 				}
 				else {
 					noPack = false;
 					System.out.println("Checksum passt");
 				}
 				System.out.println("Package erhalten");
+				System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
 			}
 			catch (SocketTimeoutException s) {
 				System.out.println("Timeout");
-				sendAnswerPacket(backupDataPacket);
+				setupPackage(false);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -119,15 +125,17 @@ public class FileReceiver {
 		backupDataPacket = dpak;
 	}
 	
-	private void setupPackage() {
+	private void setupPackage(boolean ack) throws IOException {
 		byte[] empty = new byte[0];
-		Package pak = new Package(filename, seq, true, fin, empty);
+		Package pak = new Package(filename, seq, ack, fin, empty);
 		sendAnswerPacket(pak);
-		if (seq == 0) {
-			seq = 1;
-		}
-		else {
-			seq = 0;
+		if (ack) {
+			if (seq == 0) {
+				seq = 1;
+			}
+			else {
+				seq = 0;
+			}
 		}
 	}
 	
@@ -136,7 +144,6 @@ public class FileReceiver {
 		while(fin) {
 			try {
 				fr.waitIncoming();
-				fr.setupPackage();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

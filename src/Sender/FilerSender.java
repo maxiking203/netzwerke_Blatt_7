@@ -111,6 +111,11 @@ public class FilerSender {
 					pak.setChecksum();
 					if (pak.getSeqNum() == seq) {
 						System.out.println("Seq in Ordnung");
+						gotpackage = true;
+					}
+					else {
+						System.out.println("Seq falsch");
+						sendPacket(backupDataPacket);
 					}
 					if (check != pak.getCheckSum()) {
 						System.out.println("Checksum falsch");
