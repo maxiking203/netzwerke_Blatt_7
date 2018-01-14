@@ -38,7 +38,13 @@ public class Package implements Serializable {
 	}
 	
 	public Package(DatagramPacket dpak) {
-		udpPackageToPackage(dpak);
+		Package inpak = udpPackageToPackage(dpak);
+		this.filename = inpak.filename;
+		this.seqNum = inpak.seqNum;
+		this.ack = inpak.ack;
+		this.fin = inpak.fin;
+		this.content = inpak.content;
+		this.checkSum = inpak.checkSum;
 	}
 	
 	

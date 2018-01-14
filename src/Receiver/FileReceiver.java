@@ -83,14 +83,15 @@ public class FileReceiver {
 				ip = incomingPacket.getAddress();
 				Package pak = new Package(incomingPacket);
 				fin = pak.getFin();
+				System.out.println(pak.getFilename() + "," + pak.getSeqNum() + "," + pak.getAck() + "," + pak.getFin() + "," + pak.getCheckSum());
 				long check = pak.getCheckSum();
 				pak.setChecksum();
+				System.out.println(pak.getCheckSum());
 				if (pak.getSeqNum() == seq) {
 					System.out.println("Seq in Ordnung");
 					if (check == pak.getCheckSum()) {
 						System.out.println("Checksum passt");
 						System.out.println("Package erhalten");
-						System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
 						noPack = false;
 						seq = pak.getSeqNum();
 					}

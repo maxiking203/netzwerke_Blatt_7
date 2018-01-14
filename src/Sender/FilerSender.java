@@ -26,6 +26,7 @@ public class FilerSender {
 	private DatagramPacket backupDataPacket;
 	private byte[] toSendFile;
 	private int seq = 0;
+	private boolean ack = false;
 	private int positionArray;
 	private SenderState currentState;
 	private boolean status = true;
@@ -112,19 +113,29 @@ public class FilerSender {
 					pak.setChecksum();
 					if (pak.getSeqNum() == seq) {
 						System.out.println("Seq in Ordnung");
-						gotpackage = true;
+						if (pak.getAck()) {
+							System.out.println("Ack in Ordnung");
+							ack = true;
+							if (check == pak.getCheckSum()) {
+								System.out.println("Checksum passt");
+								System.out.println("Package erhalten");
+								System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
+								gotpackage = true;
+								prepare();
+							}
+							else {
+								System.out.println("Checksum falsch");
+								sendPacket(backupDataPacket);
+							}
+						}
+						else {
+							System.out.println("Ack falsch");
+							sendPacket(backupDataPacket);
+						}
 					}
 					else {
 						System.out.println("Seq falsch");
 						sendPacket(backupDataPacket);
-					}
-					if (check != pak.getCheckSum()) {
-						System.out.println("Checksum falsch");
-						sendPacket(backupDataPacket);
-					}
-					else {
-						gotpackage = true;
-						System.out.println("Checksum passt");
 					}
 				}
 				catch (SocketTimeoutException s) {
@@ -138,11 +149,13 @@ public class FilerSender {
 	}
 	
 	private void prepare() throws IOException {
-		if (seq == 0) {
-			seq = 1;
-		}
-		else {
-			seq = 0;
+		if (ack) {
+			if (seq == 0) {
+				seq = 1;
+			}
+			else {
+				seq = 0;
+			}
 		}
 		
 		Package pack = setupPackage();
@@ -196,6 +209,7 @@ public class FilerSender {
 		}
 		else {
 			Package pack = new Package(file.getName(), seq, true, false, send);
+			System.out.println(file.getName());
 			return pack;
 		}
 	}
