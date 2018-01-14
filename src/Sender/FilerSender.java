@@ -22,11 +22,13 @@ public class FilerSender {
 	private FileInputStream fis;
 	private DatagramSocket sock;
 	private final int port = 5000;
-	private DatagramPacket backupPacket;
+	private DatagramPacket backupDataPacket;
 	private byte[] toSendFile;
 	private int seq = 0;
 	private int positionArray;
 	private SenderState currentState;
+	private boolean status = true;
+	private Package backupPacket;
 	private Transition[][] trans = new Transition[SenderState.values().length][SenderMsg.values().length];
 	
 	{
@@ -96,7 +98,7 @@ public class FilerSender {
 		dpak.setAddress(ip);
 		dpak.setPort(port);
 		sock.send(dpak);
-		backupPacket = dpak;
+		backupDataPacket = dpak;
 	}
 	
 	private void waitForIncomingPacket() throws IOException {
@@ -117,7 +119,7 @@ public class FilerSender {
 					}
 					if (check != pak.getCheckSum()) {
 						System.out.println("Checksum falsch");
-						sendPacket(backupPacket);
+						sendPacket(backupDataPacket);
 					}
 					else {
 						gotpackage = true;
@@ -126,7 +128,7 @@ public class FilerSender {
 				}
 				catch (SocketTimeoutException s) {
 					System.out.println("Timeout");
-					sendPacket(backupPacket);
+					sendPacket(backupDataPacket);
 					System.out.println("Resend Backup-Packet");
 				} catch (IOException e) {
 					e.printStackTrace();
