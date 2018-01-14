@@ -16,6 +16,7 @@ public class FileReceiver {
 	private DatagramSocket sock;
 	private String filename;
 	private final int port = 5001;
+	private final int sport = 5000;
 	private InetAddress ip;
 	private DatagramPacket backupDataPacket;
 	private int seq = 0;
@@ -120,7 +121,7 @@ public class FileReceiver {
 	
 	private void sendAnswerPacket(DatagramPacket dpak) throws IOException {
 		dpak.setAddress(ip);
-		dpak.setPort(port);
+		dpak.setPort(sport);
 		sock.send(dpak);
 		backupDataPacket = dpak;
 	}
