@@ -87,23 +87,22 @@ public class FileReceiver {
 				pak.setChecksum();
 				if (pak.getSeqNum() == seq) {
 					System.out.println("Seq in Ordnung");
-					seq = pak.getSeqNum();
-					noPack = false;
+					if (check == pak.getCheckSum()) {
+						System.out.println("Checksum passt");
+						System.out.println("Package erhalten");
+						System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
+						noPack = false;
+						seq = pak.getSeqNum();
+					}
+					else {
+						System.out.println("Checksum falsch");
+						setupPackage(false);
+					}
 				}
 				else {
 					System.out.println("Seq falsch");
 					setupPackage(false);
 				}
-				if (check != pak.getCheckSum()) {
-					System.out.println("Checksum falsch");
-					setupPackage(false);
-				}
-				else {
-					noPack = false;
-					System.out.println("Checksum passt");
-				}
-				System.out.println("Package erhalten");
-				System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
 			}
 			catch (SocketTimeoutException s) {
 				System.out.println("Timeout");
