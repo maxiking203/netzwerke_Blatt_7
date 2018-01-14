@@ -29,38 +29,38 @@ public class FileReceiver {
 	private ReceiverState currentState;
 	private Transition[][] trans = new Transition[ReceiverState.values().length][ReceiverMsg.values().length];
 	
-	{
-		trans[ReceiverState.WAIT.ordinal()][ReceiverMsg.received.ordinal()] = p -> {
-			System.out.println("Sending first package.");
-			p = new Package();
-			return ReceiverState.SEND_ACK;
-		};
-		
-		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_ack.ordinal()] = p -> {
-			System.out.println("Checking Data of received package...is right");
-			p = new Package();
-			return ReceiverState.WAIT;
-		};
-		
-		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_nack.ordinal()] = p -> {
-			System.out.println("Sending true ACK.");
-			p = new Package();
-			return ReceiverState.WAIT;
-		};
-		
-		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_fin.ordinal()] = p -> {
-			System.out.println("Checking Data of received package...is wrong.");
-			p = new Package();
-			return ReceiverState.SEND_ACK;
-		};
-		
-		trans[ReceiverState.WAIT.ordinal()][ReceiverMsg.timeout_after_first_package.ordinal()] = p -> {
-			System.out.println("Sending false ACK.");
-			p = new Package();
-			return ReceiverState.WAIT;
-		};
-		
-	}
+//	{
+//		trans[ReceiverState.WAIT.ordinal()][ReceiverMsg.received.ordinal()] = p -> {
+//			System.out.println("Sending first package.");
+//			p = new Package();
+//			return ReceiverState.SEND_ACK;
+//		};
+//		
+//		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_ack.ordinal()] = p -> {
+//			System.out.println("Checking Data of received package...is right");
+//			p = new Package();
+//			return ReceiverState.WAIT;
+//		};
+//		
+//		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_nack.ordinal()] = p -> {
+//			System.out.println("Sending true ACK.");
+//			p = new Package();
+//			return ReceiverState.WAIT;
+//		};
+//		
+//		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_fin.ordinal()] = p -> {
+//			System.out.println("Checking Data of received package...is wrong.");
+//			p = new Package();
+//			return ReceiverState.SEND_ACK;
+//		};
+//		
+//		trans[ReceiverState.WAIT.ordinal()][ReceiverMsg.timeout_after_first_package.ordinal()] = p -> {
+//			System.out.println("Sending false ACK.");
+//			p = new Package();
+//			return ReceiverState.WAIT;
+//		};
+//		
+//	}
 	
 	public FileReceiver() {
 		this.filearray = new byte[1000];
@@ -234,7 +234,7 @@ public class FileReceiver {
 		while(!fin) {
 			try {
 				fr.waitIncoming();
-				fr.waitIncomingCorrupted(10, 5, 5);
+				//fr.waitIncomingCorrupted(10, 5, 5);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

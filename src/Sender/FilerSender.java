@@ -35,30 +35,35 @@ public class FilerSender {
 	
 	public FilerSender(String filename, InetAddress ip) {
 		currentState = SenderState.START;
-		
+		trans = new Transition[SenderState.values().length] [SenderMsg.values().length];
 		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = p -> {
 			prepare();
 			return SenderState.SEND;
 		};
 		trans[SenderState.SEND.ordinal()][SenderMsg.wait_ack.ordinal()] = p -> {
+			System.out.println("Waiting for ACK.");
 			waitForIncomingPacket();
-			return SenderState.SEND;
+			return SenderState.WAIT_FOR_ACK;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_true.ordinal()] = p -> {
-			System.out.println("Waiting for ACK.");
+			System.out.println("Ack true");
+			prepare();
 			return SenderState.SEND;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_false.ordinal()] = p -> {
-			System.out.println("Got true ack. Setting up new Data");
+			sendBackupPack();
+			System.out.println("Got false ack. Setting up new Data");
 			return SenderState.SEND;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.received_fin.ordinal()] = p -> {
-			System.out.println("Got false ACK. Sending Package again.");
+			System.out.println("Got FIN end now.");
 			return SenderState.END;
 		};
+		
+		System.out.println("INFO FSM constructed, current state: "+currentState);
 		
 		this.file = new File(filename);
 		this.ip = ip;
@@ -75,6 +80,10 @@ public class FilerSender {
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
+		
+		processMsg(SenderMsg.set_up_first);
+		
+		processMsg(SenderMsg.wait_ack);
 	}
 	
 	private void sendPacket(Package pak) throws IOException {
@@ -115,31 +124,27 @@ public class FilerSender {
 								System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
 								gotpackage = true;
 								if (!fin) {
-									prepare();
+									processMsg(SenderMsg.ack_true);
 								}
-								processMsg(SenderMsg.ack_true);
 							}
 							else {
 								System.out.println("Checksum falsch");
-								sendBackupPack();
 								processMsg(SenderMsg.ack_false);
 							}
 						}
 						else {
 							System.out.println("Ack falsch");
-							sendBackupPack();
 							processMsg(SenderMsg.ack_false);
 						}
 					}
 					else {
 						System.out.println("Seq falsch");
-						sendBackupPack();
 						processMsg(SenderMsg.ack_false);
 					}
 				}
 				catch (SocketTimeoutException s) {
 					System.out.println("Timeout");
-					sendBackupPack();
+					processMsg(SenderMsg.ack_false);
 					System.out.println("Resend Backup-Packet");
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -231,10 +236,10 @@ public class FilerSender {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			try {
 				FilerSender fs = new FilerSender("default.txt", InetAddress.getByName("127.0.0.1"));
-				while(!fin) {
-					fs.prepare();
-					fs.waitForIncomingPacket();
-				}
+//				while(!fin) {
+//					fs.prepare();
+//					fs.waitForIncomingPacket();
+//				}
 			} catch (UnknownHostException e1) {
 				e1.printStackTrace();
 			}
