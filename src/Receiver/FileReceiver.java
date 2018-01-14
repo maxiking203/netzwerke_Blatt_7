@@ -7,8 +7,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import Package.Package;
-import Sender.SenderMsg;
-import Sender.SenderState;
+
 
 
 public class FileReceiver {
@@ -18,31 +17,43 @@ public class FileReceiver {
 	
 	{
 		trans[ReceiverState.WAIT.ordinal()][ReceiverMsg.recieved.ordinal()] = p -> {
-			System.out.println("Sending initial package.");
+			System.out.println("Sending first package.");
 			p = new Package();
 			return ReceiverState.CHECK_DATA;
 		};
 		
 		trans[ReceiverState.CHECK_DATA.ordinal()][ReceiverMsg.data_right.ordinal()] = p -> {
-			System.out.println("Sending initial package.");
+			System.out.println("Checking Data of received package...is right");
 			p = new Package();
 			return ReceiverState.SEND_ACK_true;
 		};
 		
+		trans[ReceiverState.SEND_ACK_true.ordinal()][ReceiverMsg.wait_right.ordinal()] = p -> {
+			System.out.println("Sending true ACK.");
+			p = new Package();
+			return ReceiverState.WAIT;
+		};
+		
 		trans[ReceiverState.CHECK_DATA.ordinal()][ReceiverMsg.data_wrong.ordinal()] = p -> {
-			System.out.println("Sending initial package.");
+			System.out.println("Checking Data of received package...is wrong.");
 			p = new Package();
 			return ReceiverState.SEND_ACK_FALSE;
 		};
 		
+		trans[ReceiverState.SEND_ACK_FALSE.ordinal()][ReceiverMsg.wait_wrong.ordinal()] = p -> {
+			System.out.println("Sending false ACK.");
+			p = new Package();
+			return ReceiverState.WAIT;
+		};
+		
 		trans[ReceiverState.CHECK_DATA.ordinal()][ReceiverMsg.last_right.ordinal()] = p -> {
-			System.out.println("Sending initial package.");
+			System.out.println("Last package. Everthing was alright");
 			p = new Package();
 			return ReceiverState.GOT_LAST;
 		};
 		
 		trans[ReceiverState.GOT_LAST.ordinal()][ReceiverMsg.done.ordinal()] = p -> {
-			System.out.println("Sending initial package.");
+			System.out.println("Ending Process.");
 			p = new Package();
 			return ReceiverState.END;
 		};
