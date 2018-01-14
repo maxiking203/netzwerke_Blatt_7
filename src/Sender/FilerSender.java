@@ -136,7 +136,7 @@ public class FilerSender {
 			}
 	}
 	
-	private void update() throws IOException {
+	private void prepare() throws IOException {
 		if (seq == 0) {
 			seq = 1;
 		}
@@ -206,7 +206,7 @@ public class FilerSender {
 			try {
 				FilerSender fs = new FilerSender("default.txt", InetAddress.getByName("127.0.0.1"));
 				while(true) {
-					fs.update();
+					fs.prepare();
 					fs.waitForIncomingPacket();
 				}
 			} catch (UnknownHostException e1) {
