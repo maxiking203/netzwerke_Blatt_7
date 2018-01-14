@@ -126,6 +126,11 @@ public class FileReceiver {
 		}
 	}
 	
+	private int randomWithRange(int min, int max) {
+	   int range = (max - min) + 1;     
+	   return (int)(Math.random() * range) + min;
+	}
+	
 	private void waitIncomingCorrupted(int bit, int thro, int dup) throws IOException {
 		boolean noPack = true;
 		while(noPack) {
@@ -133,7 +138,9 @@ public class FileReceiver {
 			DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
 			
 			try {
-				sock.receive(incomingPacket);
+				if (randomWithRange(0,100) > thro) {
+					sock.receive(incomingPacket);
+				}
 				sock.setSoTimeout(1000);
 				ip = incomingPacket.getAddress();
 				Package pak = new Package(incomingPacket);
@@ -145,7 +152,7 @@ public class FileReceiver {
 				System.out.println(pak.getCheckSum());
 				if (pak.getSeqNum() == seq) {
 					System.out.println("Seq in Ordnung");
-					if (check == pak.getCheckSum()) {
+					if (check == pak.getCheckSum() && randomWithRange(0,100) > bit) {
 						System.out.println("Checksum passt");
 						System.out.println("Package erhalten");
 						noPack = false;
