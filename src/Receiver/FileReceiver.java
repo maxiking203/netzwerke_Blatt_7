@@ -62,7 +62,7 @@ public class FileReceiver {
 	}
 	
 	public FileReceiver() {
-		this.filearray = new byte[1024];
+		this.filearray = new byte[1000];
 		try {
 			sock = new DatagramSocket(port);
 		} catch (SocketException e) {
@@ -99,7 +99,6 @@ public class FileReceiver {
 						System.out.println("Checksum passt");
 						System.out.println("Package erhalten");
 						noPack = false;
-						seq = pak.getSeqNum();
 						bytesToArray(pak.getContent());
 						if (fin) {
 							byteArrayToFile(filearray);
@@ -124,21 +123,19 @@ public class FileReceiver {
 			}
 		}
 	}
-	
 	private void bytesToArray(byte[] content) {
-		try {
-			for (byte b : content) {
-				filearray[positionArray] = b;
-				positionArray++;
+			try {
+				for (int i = 0; i < content.length; i++) {
+					filearray[positionArray] = content[i];
+					positionArray++;
+				}
 			}
-		}
-		catch (ArrayIndexOutOfBoundsException a) {
-			byte[] filearraynew = new byte[filearray.length * 2];
-			System.arraycopy(filearray, 0, filearraynew, 0, filearray.length);
-			filearray = filearraynew;
-			bytesToArray(content);
-		}
-		
+			catch (ArrayIndexOutOfBoundsException a) {
+				byte[] filearraynew = new byte[(filearray.length + 1000)];
+				System.arraycopy(filearray, 0, filearraynew, 0, filearray.length);
+				filearray = filearraynew;
+				bytesToArray(content);
+			}
 	}
 	
 	private void sendAnswerPacket(Package pak) throws IOException {

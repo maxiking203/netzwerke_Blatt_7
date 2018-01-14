@@ -182,7 +182,7 @@ public class FilerSender {
         } 
         finally {
             try {
-                if(fis != null) 
+                if (fis != null) 
                 	fis.close();
             } 
             catch (IOException e) {}
@@ -194,13 +194,13 @@ public class FilerSender {
 		byte[] splittedArray;
 		if (toSendFile.length - positionArray >= 1000) {
 			splittedArray = new byte[1000];
-			System.arraycopy(toSendFile, positionArray, splittedArray, positionArray, 1000);
+			System.arraycopy(toSendFile, positionArray, splittedArray, 0, 1000);
 			positionArray += 1000;	
 		}
 		else {
 			splittedArray = new byte[toSendFile.length - positionArray];
-			System.arraycopy(toSendFile, positionArray, splittedArray, positionArray, toSendFile.length - positionArray);
-			positionArray += toSendFile.length - positionArray;	
+			System.arraycopy(toSendFile, positionArray, splittedArray, 0, toSendFile.length - positionArray);
+			positionArray += (toSendFile.length - positionArray);	
 		}
 		return splittedArray;
 	}
