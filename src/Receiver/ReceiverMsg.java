@@ -2,11 +2,12 @@ package Receiver;
 
 public enum ReceiverMsg {
 	
-	set_up,
-	wait_ack,
-	ack_true,
-	ack_false,
-	next_package,
+	recieved,
+	data_wrong,
+	data_right,
+	wait_wrong,
+	wait_right,
+	last_right,
 	done;
 
 }

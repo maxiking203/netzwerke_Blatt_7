@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.util.concurrent.ExecutorService;
 
 import Package.Package;
 
@@ -24,7 +25,49 @@ public class FilerSender {
 	private DatagramPacket backupPacket;
 	private byte[] toSendFile;
 	private int seq = 0;
-	private int positionArray;	
+	private int positionArray;
+	private SenderState currentState;
+	private Transition[][] trans = new Transition[SenderState.values().length][SenderMsg.values().length];
+	
+	{
+		
+		trans[SenderState.START.ordinal()][SenderMsg.set_up.ordinal()] = p -> {
+			System.out.println("Sending initial package.");
+			p = new Package();
+			return SenderState.UPDATE_DATA;
+		};
+		
+		trans[SenderState.UPDATE_DATA.ordinal()][SenderMsg.next_package.ordinal()] = p -> {
+			System.out.println("Sending initial package.");
+			p = new Package();
+			return SenderState.SEND_PACKAGE;
+		};
+		
+		trans[SenderState.SEND_PACKAGE.ordinal()][SenderMsg.wait_ack.ordinal()] = p -> {
+			System.out.println("Sending initial package.");
+			p = new Package();
+			return SenderState.WAIT_FOR_ACK;
+		};
+		
+		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_true.ordinal()] = p -> {
+			System.out.println("Sending initial package.");
+			p = new Package();
+			return SenderState.UPDATE_DATA;
+		};
+		
+		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_false.ordinal()] = p -> {
+			System.out.println("Sending initial package.");
+			p = new Package();
+			return SenderState.SEND_PACKAGE;
+		};
+		
+		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.done.ordinal()] = p -> {
+			System.out.println("Sending initial package.");
+			p = new Package();
+			return SenderState.END;
+		};
+		
+	}
 	
 	public FilerSender(String filename, InetAddress ip) {
 		this.file = new File(filename);
@@ -172,6 +215,13 @@ public class FilerSender {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-}
+	}
+	
+	@FunctionalInterface
+	private interface Transition {
+		
+		SenderState execute(Package p);
+		
+	}
 
 }
