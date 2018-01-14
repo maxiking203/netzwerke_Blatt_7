@@ -15,7 +15,7 @@ public class FileReceiver {
 	
 	private DatagramSocket sock;
 	private String filename;
-	private final int port = 5000;
+	private final int port = 5001;
 	private InetAddress ip;
 	private DatagramPacket backupDataPacket;
 	private int seq = 0;

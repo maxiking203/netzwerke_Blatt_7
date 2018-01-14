@@ -22,6 +22,7 @@ public class FilerSender {
 	private FileInputStream fis;
 	private DatagramSocket sock;
 	private final int port = 5000;
+	private final int sport = 5001;
 	private DatagramPacket backupDataPacket;
 	private byte[] toSendFile;
 	private int seq = 0;
@@ -77,8 +78,8 @@ public class FilerSender {
 			e.printStackTrace();
 		}
 		try {
-			sock = new DatagramSocket();
-			sock.setSoTimeout(500);
+			sock = new DatagramSocket(port);
+			sock.setSoTimeout(1000);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
@@ -91,7 +92,7 @@ public class FilerSender {
 	
 	private void sendPacket(DatagramPacket dpak) throws IOException {
 		dpak.setAddress(ip);
-		dpak.setPort(port);
+		dpak.setPort(sport);
 		sock.send(dpak);
 		backupDataPacket = dpak;
 	}
