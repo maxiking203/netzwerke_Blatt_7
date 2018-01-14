@@ -30,40 +30,28 @@ public class FileReceiver {
 			return ReceiverState.SEND_ACK;
 		};
 		
-		trans[ReceiverState.CHECK_DATA.ordinal()][ReceiverMsg.data_right.ordinal()] = p -> {
+		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_ack.ordinal()] = p -> {
 			System.out.println("Checking Data of received package...is right");
 			p = new Package();
-			return ReceiverState.SEND_ACK;
+			return ReceiverState.WAIT;
 		};
 		
-		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.wait_right.ordinal()] = p -> {
+		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_nack.ordinal()] = p -> {
 			System.out.println("Sending true ACK.");
 			p = new Package();
 			return ReceiverState.WAIT;
 		};
 		
-		trans[ReceiverState.CHECK_DATA.ordinal()][ReceiverMsg.data_wrong.ordinal()] = p -> {
+		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.send_fin.ordinal()] = p -> {
 			System.out.println("Checking Data of received package...is wrong.");
 			p = new Package();
 			return ReceiverState.SEND_ACK;
 		};
 		
-		trans[ReceiverState.SEND_ACK.ordinal()][ReceiverMsg.wait_wrong.ordinal()] = p -> {
+		trans[ReceiverState.WAIT.ordinal()][ReceiverMsg.timeout_after_first_package.ordinal()] = p -> {
 			System.out.println("Sending false ACK.");
 			p = new Package();
 			return ReceiverState.WAIT;
-		};
-		
-		trans[ReceiverState.CHECK_DATA.ordinal()][ReceiverMsg.last_right.ordinal()] = p -> {
-			System.out.println("Last package. Everthing was alright");
-			p = new Package();
-			return ReceiverState.GOT_LAST;
-		};
-		
-		trans[ReceiverState.GOT_LAST.ordinal()][ReceiverMsg.done.ordinal()] = p -> {
-			System.out.println("Ending Process.");
-			p = new Package();
-			return ReceiverState.END;
 		};
 		
 	}
