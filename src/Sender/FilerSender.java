@@ -36,17 +36,8 @@ public class FilerSender {
 	
 	{
 		
-		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = p -> {
-			System.out.println("Setting up first Data.");
-			p = new Package();
-			return SenderState.SEND;
-		};
-		
-		trans[SenderState.SEND.ordinal()][SenderMsg.wait_ack.ordinal()] = p -> {
-			System.out.println("Sending Package.");
-			p = new Package();
-			return SenderState.WAIT_FOR_ACK;
-		};
+		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = prepare();
+		trans[SenderState.SEND.ordinal()][SenderMsg.wait_ack.ordinal()] = waitForIncomingPacket();
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_true.ordinal()] = p -> {
 			System.out.println("Waiting for ACK.");
@@ -100,7 +91,7 @@ public class FilerSender {
 		sock.send(dpak);
 	}
 	
-	private void waitForIncomingPacket() throws IOException {
+	private Transition waitForIncomingPacket() throws IOException {
 		boolean gotpackage = false;
 		
 			
@@ -127,20 +118,24 @@ public class FilerSender {
 								if (!fin) {
 									prepare();
 								}
+								processMsg(SenderMsg.ack_true);
 							}
 							else {
 								System.out.println("Checksum falsch");
 								sendPacket(backupDataPacket);
+								processMsg(SenderMsg.ack_false);
 							}
 						}
 						else {
 							System.out.println("Ack falsch");
 							sendPacket(backupDataPacket);
+							processMsg(SenderMsg.ack_false);
 						}
 					}
 					else {
 						System.out.println("Seq falsch");
 						sendPacket(backupDataPacket);
+						processMsg(SenderMsg.ack_false);
 					}
 				}
 				catch (SocketTimeoutException s) {
@@ -151,9 +146,10 @@ public class FilerSender {
 					e.printStackTrace();
 				}
 			}
+			return SenderState.SEND;
 	}
 	
-	private void prepare() throws IOException {
+	private Transition prepare() throws IOException {
 		if (ack) {
 			if (seq == 0) {
 				seq = 1;
@@ -165,6 +161,7 @@ public class FilerSender {
 		
 		Package pack = setupPackage();
 		sendPacket(pack);
+		return SenderState.SEND;
 	}
 	
 	private byte[] fileToByteArray() {
