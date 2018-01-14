@@ -20,11 +20,11 @@ public class FileReceiver {
 	private final int port = 5001;
 	private final int sport = 5000;
 	private InetAddress ip;
-	private DatagramPacket backupDataPacket;
 	private int seq = 0;
 	private byte[] filearray;
 	private int positionArray = 0;
 	private static boolean fin = false;
+	private DatagramPacket backupDataPacket;
 	private ReceiverState currentState;
 	private Transition[][] trans = new Transition[ReceiverState.values().length][ReceiverMsg.values().length];
 	
@@ -103,21 +103,22 @@ public class FileReceiver {
 						if (fin) {
 							byteArrayToFile(filearray);
 						}
+						seq = pak.getSeqNum();
 						setupPackage(true);
 					}
 					else {
 						System.out.println("Checksum falsch");
-						setupPackage(false);
+						sendAnswerPacket(backupDataPacket);
 					}
 				}
 				else {
 					System.out.println("Seq falsch");
-					setupPackage(false);
+					sendAnswerPacket(backupDataPacket);
 				}
 			}
 			catch (SocketTimeoutException s) {
 				System.out.println("Timeout");
-				setupPackage(false);
+				sendAnswerPacket(backupDataPacket);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -131,7 +132,7 @@ public class FileReceiver {
 				}
 			}
 			catch (ArrayIndexOutOfBoundsException a) {
-				byte[] filearraynew = new byte[(filearray.length + 1000)];
+				byte[] filearraynew = new byte[(filearray.length + content.length)];
 				System.arraycopy(filearray, 0, filearraynew, 0, filearray.length);
 				filearray = filearraynew;
 				bytesToArray(content);
