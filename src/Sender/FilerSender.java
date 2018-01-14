@@ -31,6 +31,7 @@ public class FilerSender {
 	private SenderState currentState;
 	private boolean status = true;
 	private Package backupPacket;
+	private static boolean fin = false;
 	private Transition[][] trans = new Transition[SenderState.values().length][SenderMsg.values().length];
 	
 	{
@@ -110,7 +111,8 @@ public class FilerSender {
 					sock.receive(incomingPacket);
 					Package pak = new Package(incomingPacket);
 					long check = pak.getCheckSum();
-					pak.setChecksum();
+					fin = pak.getFin();
+					//pak.setChecksum();
 					if (pak.getSeqNum() == seq) {
 						System.out.println("Seq in Ordnung");
 						if (pak.getAck()) {
@@ -121,7 +123,9 @@ public class FilerSender {
 								System.out.println("Package erhalten");
 								System.out.println(pak.getAck() + "," + pak.getFilename() + "," + pak.getFin() + "," + pak.getSeqNum());
 								gotpackage = true;
-								prepare();
+								if (!fin) {
+									prepare();
+								}
 							}
 							else {
 								System.out.println("Checksum falsch");
@@ -220,7 +224,7 @@ public class FilerSender {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			try {
 				FilerSender fs = new FilerSender("default.txt", InetAddress.getByName("127.0.0.1"));
-				while(true) {
+				while(!fin) {
 					fs.prepare();
 					fs.waitForIncomingPacket();
 				}

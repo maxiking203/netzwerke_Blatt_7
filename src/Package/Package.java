@@ -58,6 +58,12 @@ public class Package implements Serializable {
 		this.checkSum = checkSumObj.getValue();
 	}
 	
+	public long generateCheckSumArray(byte[] input) {
+		CRC32 checkSumObj = new CRC32();
+		checkSumObj.update(input, 0, input.length);
+		return checkSumObj.getValue();
+	}
+	
 	
 	///////////////////////////////
 	//Umwandlungs Methoden
