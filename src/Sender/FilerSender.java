@@ -89,14 +89,15 @@ public class FilerSender {
 	
 	private void sendPacket(Package pak) throws IOException {
 		DatagramPacket dpak = pak.PackageToDatagramPacket();
+		backupPacket = pak;
 		sendPacket(dpak);
 	}
 	
 	private void sendPacket(DatagramPacket dpak) throws IOException {
 		dpak.setAddress(ip);
 		dpak.setPort(sport);
-		sock.send(dpak);
 		backupDataPacket = dpak;
+		sock.send(dpak);
 	}
 	
 	private void waitForIncomingPacket() throws IOException {

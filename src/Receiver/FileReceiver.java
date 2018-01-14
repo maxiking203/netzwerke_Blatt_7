@@ -25,6 +25,7 @@ public class FileReceiver {
 	private int positionArray = 0;
 	private static boolean fin = false;
 	private DatagramPacket backupDataPacket;
+	private Package backupPacket;
 	private ReceiverState currentState;
 	private Transition[][] trans = new Transition[ReceiverState.values().length][ReceiverMsg.values().length];
 	
@@ -124,6 +125,56 @@ public class FileReceiver {
 			}
 		}
 	}
+	
+	private void waitIncomingCorrupted(int bit, int thro, int dup) throws IOException {
+		boolean noPack = true;
+		while(noPack) {
+			byte[] buffer = new byte[1400];
+			DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
+			
+			try {
+				sock.receive(incomingPacket);
+				sock.setSoTimeout(1000);
+				ip = incomingPacket.getAddress();
+				Package pak = new Package(incomingPacket);
+				fin = pak.getFin();
+				filename = pak.getFilename();
+				System.out.println(pak.getFilename() + "," + pak.getSeqNum() + "," + pak.getAck() + "," + pak.getFin() + "," + pak.getCheckSum());
+				long check = pak.getCheckSum();
+				//pak.setChecksum();
+				System.out.println(pak.getCheckSum());
+				if (pak.getSeqNum() == seq) {
+					System.out.println("Seq in Ordnung");
+					if (check == pak.getCheckSum()) {
+						System.out.println("Checksum passt");
+						System.out.println("Package erhalten");
+						noPack = false;
+						bytesToArray(pak.getContent());
+						if (fin) {
+							byteArrayToFile(filearray);
+						}
+						seq = pak.getSeqNum();
+						setupPackage(true);
+					}
+					else {
+						System.out.println("Checksum falsch");
+						sendAnswerPacket(backupDataPacket);
+					}
+				}
+				else {
+					System.out.println("Seq falsch");
+					sendAnswerPacket(backupDataPacket);
+				}
+			}
+			catch (SocketTimeoutException s) {
+				System.out.println("Timeout");
+				sendAnswerPacket(backupDataPacket);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	private void bytesToArray(byte[] content) {
 			try {
 				for (int i = 0; i < content.length; i++) {
@@ -141,6 +192,7 @@ public class FileReceiver {
 	
 	private void sendAnswerPacket(Package pak) throws IOException {
 		DatagramPacket dpak = pak.PackageToDatagramPacket();
+		backupPacket = pak;
 		sendAnswerPacket(dpak);
 	}
 	
@@ -181,6 +233,7 @@ public class FileReceiver {
 		while(!fin) {
 			try {
 				fr.waitIncoming();
+				fr.waitIncomingCorrupted(10, 5, 5);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
