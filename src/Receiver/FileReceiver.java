@@ -141,7 +141,7 @@ public class FileReceiver {
 	
 	public static void main(String[] args) throws SocketException {
 		FileReceiver fr = new FileReceiver();
-		while(fin) {
+		while(!fin) {
 			try {
 				fr.waitIncoming();
 			} catch (IOException e) {
