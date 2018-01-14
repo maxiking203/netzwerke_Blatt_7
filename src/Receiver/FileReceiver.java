@@ -22,6 +22,8 @@ public class FileReceiver {
 	private InetAddress ip;
 	private DatagramPacket backupDataPacket;
 	private int seq = 0;
+	private byte[] filearray;
+	private int positionArray = 0;
 	private static boolean fin = false;
 	private ReceiverState currentState;
 	private Transition[][] trans = new Transition[ReceiverState.values().length][ReceiverMsg.values().length];
@@ -60,6 +62,7 @@ public class FileReceiver {
 	}
 	
 	public FileReceiver() {
+		this.filearray = new byte[1024];
 		try {
 			sock = new DatagramSocket(port);
 		} catch (SocketException e) {
@@ -85,6 +88,7 @@ public class FileReceiver {
 				ip = incomingPacket.getAddress();
 				Package pak = new Package(incomingPacket);
 				fin = pak.getFin();
+				filename = pak.getFilename();
 				System.out.println(pak.getFilename() + "," + pak.getSeqNum() + "," + pak.getAck() + "," + pak.getFin() + "," + pak.getCheckSum());
 				long check = pak.getCheckSum();
 				//pak.setChecksum();
@@ -96,6 +100,10 @@ public class FileReceiver {
 						System.out.println("Package erhalten");
 						noPack = false;
 						seq = pak.getSeqNum();
+						bytesToArray(pak.getContent());
+						if (fin) {
+							byteArrayToFile(filearray);
+						}
 						setupPackage(true);
 					}
 					else {
@@ -115,6 +123,22 @@ public class FileReceiver {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private void bytesToArray(byte[] content) {
+		try {
+			for (byte b : content) {
+				filearray[positionArray] = b;
+				positionArray++;
+			}
+		}
+		catch (ArrayIndexOutOfBoundsException a) {
+			byte[] filearraynew = new byte[filearray.length * 2];
+			System.arraycopy(filearray, 0, filearraynew, 0, filearray.length);
+			filearray = filearraynew;
+			bytesToArray(content);
+		}
+		
 	}
 	
 	private void sendAnswerPacket(Package pak) throws IOException {
@@ -146,7 +170,7 @@ public class FileReceiver {
 	private void byteArrayToFile(byte[] content) throws IOException {
 		FileOutputStream stream;
 		try {
-			stream = new FileOutputStream(filename);
+			stream = new FileOutputStream("receive " + filename);
 		    stream.write(content);
 		    stream.close();
 		} catch (FileNotFoundException e) {
