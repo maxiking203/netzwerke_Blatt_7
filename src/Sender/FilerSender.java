@@ -10,8 +10,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.util.concurrent.ExecutorService;
 
 import Package.Package;
 
@@ -36,24 +34,27 @@ public class FilerSender {
 	
 	{
 		
-		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = prepare();
-		trans[SenderState.SEND.ordinal()][SenderMsg.wait_ack.ordinal()] = waitForIncomingPacket();
+		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = p -> {
+			prepare();
+			return SenderState.SEND;
+		};
+		trans[SenderState.SEND.ordinal()][SenderMsg.wait_ack.ordinal()] = p -> {
+			waitForIncomingPacket();
+			return SenderState.SEND;
+		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_true.ordinal()] = p -> {
 			System.out.println("Waiting for ACK.");
-			p = new Package();
 			return SenderState.SEND;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_false.ordinal()] = p -> {
 			System.out.println("Got true ack. Setting up new Data");
-			p = new Package();
 			return SenderState.SEND;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.received_fin.ordinal()] = p -> {
 			System.out.println("Got false ACK. Sending Package again.");
-			p = new Package();
 			return SenderState.END;
 		};
 		
@@ -91,7 +92,7 @@ public class FilerSender {
 		sock.send(dpak);
 	}
 	
-	private Transition waitForIncomingPacket() throws IOException {
+	private void waitForIncomingPacket() {
 		boolean gotpackage = false;
 		
 			
@@ -122,34 +123,42 @@ public class FilerSender {
 							}
 							else {
 								System.out.println("Checksum falsch");
-								sendPacket(backupDataPacket);
+								sendBackupPack();
 								processMsg(SenderMsg.ack_false);
 							}
 						}
 						else {
 							System.out.println("Ack falsch");
-							sendPacket(backupDataPacket);
+							sendBackupPack();
 							processMsg(SenderMsg.ack_false);
 						}
 					}
 					else {
 						System.out.println("Seq falsch");
-						sendPacket(backupDataPacket);
+						sendBackupPack();
 						processMsg(SenderMsg.ack_false);
 					}
 				}
 				catch (SocketTimeoutException s) {
 					System.out.println("Timeout");
-					sendPacket(backupDataPacket);
+					sendBackupPack();
 					System.out.println("Resend Backup-Packet");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			return SenderState.SEND;
+
 	}
 	
-	private Transition prepare() throws IOException {
+	private void sendBackupPack() {
+		try {
+			sendPacket(backupDataPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void prepare(){
 		if (ack) {
 			if (seq == 0) {
 				seq = 1;
@@ -158,10 +167,12 @@ public class FilerSender {
 				seq = 0;
 			}
 		}
-		
-		Package pack = setupPackage();
-		sendPacket(pack);
-		return SenderState.SEND;
+		try {
+			Package pack = setupPackage();
+			sendPacket(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private byte[] fileToByteArray() {
@@ -227,8 +238,6 @@ public class FilerSender {
 					fs.waitForIncomingPacket();
 				}
 			} catch (UnknownHostException e1) {
-				e1.printStackTrace();
-			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 		} catch (IOException e) {
