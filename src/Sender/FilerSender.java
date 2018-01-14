@@ -242,8 +242,17 @@ public class FilerSender {
 	@FunctionalInterface
 	private interface Transition {
 		
-		SenderState execute(Package p);
+		SenderState execute(SenderMsg msg);
 		
+	}
+	
+	public void processMsg(SenderMsg input){
+		System.out.println("INFO Received "+input+" in state "+currentState);
+		Transition t = trans[currentState.ordinal()][input.ordinal()];
+		if(trans != null){
+			currentState = t.execute(input);
+		}
+		System.out.println("INFO State: "+currentState);
 	}
 
 }
