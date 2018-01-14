@@ -31,8 +31,10 @@ public class FilerSender {
 	private Package backupPacket;
 	private static boolean fin = false;
 	private Transition[][] trans = new Transition[SenderState.values().length][SenderMsg.values().length];
+
 	
-	{
+	public FilerSender(String filename, InetAddress ip) {
+		currentState = SenderState.START;
 		
 		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = p -> {
 			prepare();
@@ -58,10 +60,6 @@ public class FilerSender {
 			return SenderState.END;
 		};
 		
-		
-	}
-	
-	public FilerSender(String filename, InetAddress ip) {
 		this.file = new File(filename);
 		this.ip = ip;
 	
@@ -247,9 +245,7 @@ public class FilerSender {
 	
 	@FunctionalInterface
 	private interface Transition {
-		
 		SenderState execute(SenderMsg msg);
-		
 	}
 	
 	public void processMsg(SenderMsg input){
