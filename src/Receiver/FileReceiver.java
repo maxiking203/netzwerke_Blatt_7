@@ -71,12 +71,6 @@ public class FileReceiver {
 		}
 	}
 	
-	
-	@FunctionalInterface
-	private interface Transition {
-		ReceiverState execute(Package p);
-	}
-	
 	private void waitIncoming() throws IOException {
 		boolean noPack = true;
 		while(noPack) {
@@ -246,6 +240,22 @@ public class FileReceiver {
 			}
 		}
 		System.out.println("Ende");
+	}
+	
+	@FunctionalInterface
+	private interface Transition {
+		
+		ReceiverState execute(ReceiverMsg msg);
+		
+	}
+	
+	public void processMsg(ReceiverMsg input){
+		System.out.println("INFO Received "+input+" in state "+currentState);
+		Transition t = trans[currentState.ordinal()][input.ordinal()];
+		if(trans != null){
+			currentState = t.execute(input);
+		}
+		System.out.println("INFO State: "+currentState);
 	}
 		
 }
