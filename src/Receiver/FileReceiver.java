@@ -1,5 +1,7 @@
 package Receiver;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -138,6 +140,17 @@ public class FileReceiver {
 			else {
 				seq = 0;
 			}
+		}
+	}
+	
+	private void byteArrayToFile(byte[] content) throws IOException {
+		FileOutputStream stream;
+		try {
+			stream = new FileOutputStream(filename);
+		    stream.write(content);
+		    stream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 	
