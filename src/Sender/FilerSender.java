@@ -33,41 +33,36 @@ public class FilerSender {
 	
 	{
 		
-		trans[SenderState.START.ordinal()][SenderMsg.set_up.ordinal()] = p -> {
+		trans[SenderState.START.ordinal()][SenderMsg.set_up_first.ordinal()] = p -> {
 			System.out.println("Setting up first Data.");
 			p = new Package();
-			return SenderState.UPDATE_DATA;
+			return SenderState.SEND;
 		};
 		
-		trans[SenderState.UPDATE_DATA.ordinal()][SenderMsg.next_package.ordinal()] = p -> {
+		trans[SenderState.SEND.ordinal()][SenderMsg.wait_ack.ordinal()] = p -> {
 			System.out.println("Sending Package.");
-			p = new Package();
-			return SenderState.SEND_PACKAGE;
-		};
-		
-		trans[SenderState.SEND_PACKAGE.ordinal()][SenderMsg.wait_ack.ordinal()] = p -> {
-			System.out.println("Waiting for ACK.");
 			p = new Package();
 			return SenderState.WAIT_FOR_ACK;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_true.ordinal()] = p -> {
-			System.out.println("Got true ack. Setting up new Data");
+			System.out.println("Waiting for ACK.");
 			p = new Package();
-			return SenderState.UPDATE_DATA;
+			return SenderState.SEND;
 		};
 		
 		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.ack_false.ordinal()] = p -> {
-			System.out.println("Got false ACK. Sending Package again.");
+			System.out.println("Got true ack. Setting up new Data");
 			p = new Package();
-			return SenderState.SEND_PACKAGE;
+			return SenderState.SEND;
 		};
 		
-		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.done.ordinal()] = p -> {
-			System.out.println("Got true ACK for last Package. Ending Process.");
+		trans[SenderState.WAIT_FOR_ACK.ordinal()][SenderMsg.received_fin.ordinal()] = p -> {
+			System.out.println("Got false ACK. Sending Package again.");
 			p = new Package();
 			return SenderState.END;
 		};
+		
 		
 	}
 	

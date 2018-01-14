@@ -3,9 +3,8 @@ package Sender;
 public enum SenderState {
 	
 	START,
-	SEND_PACKAGE,
+	SEND,
 	WAIT_FOR_ACK,
-	UPDATE_DATA,
 	END;
 	
 }
