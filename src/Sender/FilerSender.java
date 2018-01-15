@@ -106,9 +106,9 @@ public class FilerSender {
 				try {
 					sock.receive(incomingPacket);
 					Package pak = new Package(incomingPacket);
-					long check = pak.getCheckSum();
 					fin = pak.getFin();
-					//pak.setChecksum();
+					Package test = new Package(pak.getFilename(), pak.getSeqNum(), pak.getAck(), pak.getFin(), pak.getContent());
+					long check = test.getCheckSum();
 					if (pak.getSeqNum() == seq) {
 						System.out.println("Seq in Ordnung");
 						if (pak.getAck()) {

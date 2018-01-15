@@ -85,9 +85,9 @@ public class FileReceiver {
 				fin = pak.getFin();
 				filename = pak.getFilename();
 				System.out.println(pak.getFilename() + "," + pak.getSeqNum() + "," + pak.getAck() + "," + pak.getFin() + "," + pak.getCheckSum());
-				long check = pak.getCheckSum();
-				//pak.setChecksum();
-				System.out.println(pak.getCheckSum());
+				Package test = new Package(pak.getFilename(), pak.getSeqNum(), pak.getAck(), pak.getFin(), pak.getContent());
+				long check = test.getCheckSum();
+				System.out.println(test.getCheckSum());
 				if (pak.getSeqNum() == seq) {
 					System.out.println("Seq in Ordnung");
 					if (check == pak.getCheckSum()) {
