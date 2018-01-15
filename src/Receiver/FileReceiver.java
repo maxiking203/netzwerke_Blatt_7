@@ -125,7 +125,7 @@ public class FileReceiver {
 	   return (int)(Math.random() * range) + min;
 	}
 	
-	private void waitIncomingCorrupted(int bit, int thro, int dup) throws IOException {
+	private void waitIncomingCorrupted(int thro, int bit) throws IOException {
 		boolean noPack = true;
 		while(noPack) {
 			byte[] buffer = new byte[1400];
@@ -237,7 +237,7 @@ public class FileReceiver {
 		while(!fin) {
 			try {
 				fr.waitIncoming();
-				//fr.waitIncomingCorrupted(10, 5, 5);
+				//fr.waitIncomingCorrupted(0, 50);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
