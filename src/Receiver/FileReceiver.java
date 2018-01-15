@@ -25,7 +25,6 @@ public class FileReceiver {
 	private int positionArray = 0;
 	private static boolean fin = false;
 	private DatagramPacket backupDataPacket;
-	private Package backupPacket;
 	private ReceiverState currentState;
 	private Transition[][] trans = new Transition[ReceiverState.values().length][ReceiverMsg.values().length];
 	
@@ -72,6 +71,7 @@ public class FileReceiver {
 	}
 	
 	private void waitIncoming() throws IOException {
+		fin = false;
 		boolean noPack = true;
 		while(noPack) {
 			byte[] buffer = new byte[1400];
@@ -142,11 +142,11 @@ public class FileReceiver {
 				filename = pak.getFilename();
 				System.out.println(pak.getFilename() + "," + pak.getSeqNum() + "," + pak.getAck() + "," + pak.getFin() + "," + pak.getCheckSum());
 				long check = pak.getCheckSum();
-				//pak.setChecksum();
+				Package test = new Package(pak.getFilename(), pak.getSeqNum(), pak.getAck(), pak.getFin(), pak.getContent());
 				System.out.println(pak.getCheckSum());
 				if (pak.getSeqNum() == seq) {
 					System.out.println("Seq in Ordnung");
-					if (check == pak.getCheckSum() && randomWithRange(0,100) > bit) {
+					if (check == test.getCheckSum() && randomWithRange(0,100) > bit) {
 						System.out.println("Checksum passt");
 						System.out.println("Package erhalten");
 						noPack = false;
@@ -193,7 +193,6 @@ public class FileReceiver {
 	
 	private void sendAnswerPacket(Package pak) throws IOException {
 		DatagramPacket dpak = pak.PackageToDatagramPacket();
-		backupPacket = pak;
 		sendAnswerPacket(dpak);
 	}
 	
@@ -227,6 +226,10 @@ public class FileReceiver {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+//		filearray = new byte[1000];
+//		sock.setSoTimeout(0);
+//		positionArray = 0;
+//		seq = 0;
 	}
 	
 	public static void main(String[] args) throws SocketException {
@@ -239,7 +242,6 @@ public class FileReceiver {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Ende");
 	}
 	
 	@FunctionalInterface
